@@ -6,8 +6,7 @@ const BACKEND = "https://vigneshwarancj-portfolio-backend.onrender.com";
 
 const STARTER_QUESTIONS = [
   "What are Prasanna's main skills?",
-  "Tell me about the Syncly project.",
-  "How does GlycanBench work?",
+
   "What tech stack does he use?",
   "Summarize his research interests.",
 ];
@@ -115,7 +114,7 @@ export default function App() {
       <div className="flex items-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-700 to-blue-600 text-white shadow">
         <SiOpenai className="w-6 h-6" />
         <h1 className="font-semibold text-lg">
-          Vigneshwaran AI Assistant
+         Prasanna AI Assistant
         </h1>
       </div>
 
