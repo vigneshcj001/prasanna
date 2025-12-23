@@ -5,17 +5,16 @@ import { FiSend } from "react-icons/fi";
 const BACKEND = "https://prasanna-2gan.onrender.com";
 
 const STARTER_QUESTIONS = [
-  "What are Prasanna's main skills?",
-
-  "What tech stack does he use?",
-  "Summarize his research interests.",
+  "What are Prasanna's key skills?",
+  "Summarize his work experience",
+  "What industries has he worked with?",
+  "What digital marketing tools does he use?"
 ];
 
 const INITIAL_MESSAGE = {
   id: 1,
   from: "bot",
-  text: "Hi! I'm Prasanna's AI assistant. Ask me anything.",
-  time: new Date(),
+  text: "Hello. I am Prasanna’s AI Portfolio Assistant. Ask me anything about his professional background.",
 };
 
 function MessageBubble({ from, text }) {
@@ -24,13 +23,17 @@ function MessageBubble({ from, text }) {
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`px-4 py-3 rounded-xl max-w-[70%] text-sm leading-relaxed ${
+        className={`max-w-[75%] px-4 py-3 text-sm leading-relaxed rounded-2xl shadow-sm ${
           isUser
-            ? "bg-blue-600 text-white"
-            : "bg-gray-200 text-gray-900"
+            ? "bg-blue-600 text-white rounded-br-sm"
+            : "bg-white text-gray-800 border rounded-bl-sm"
         }`}
       >
-        {text}
+        {text.split("\n").map((line, i) => (
+          <p key={i} className="mb-1 last:mb-0">
+            {line}
+          </p>
+        ))}
       </div>
     </div>
   );
@@ -42,51 +45,48 @@ export default function App() {
   const [loading, setLoading] = useState(false);
 
   const scrollRef = useRef(null);
-  const typingIntervalRef = useRef(null);
+  const typingRef = useRef(null);
 
-  // Auto scroll
+  // Auto-scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
-  // Typewriter effect
-  const typeMessage = useCallback((full, id) => {
+  // Typewriter animation
+  const typeMessage = useCallback((fullText, id) => {
     return new Promise((resolve) => {
-      if (!full) return resolve();
+      let index = 0;
 
-      setMessages((prev) =>
-        prev.map((m) => (m.id === id ? { ...m, text: full[0] } : m))
-      );
-
-      let i = 1;
-      typingIntervalRef.current = setInterval(() => {
+      typingRef.current = setInterval(() => {
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === id ? { ...m, text: m.text + (full[i] || "") } : m
+            m.id === id
+              ? { ...m, text: fullText.slice(0, index + 1) }
+              : m
           )
         );
-        i++;
 
-        if (i >= full.length) {
-          clearInterval(typingIntervalRef.current);
+        index++;
+        if (index >= fullText.length) {
+          clearInterval(typingRef.current);
           resolve();
         }
-      }, 15);
+      }, 12);
     });
   }, []);
 
   const sendMessage = async (text) => {
     if (!text.trim() || loading) return;
 
-    const uId = Date.now();
-    const bId = uId + 1;
+    const userId = Date.now();
+    const botId = userId + 1;
 
     setMessages((prev) => [
       ...prev,
-      { id: uId, from: "user", text },
-      { id: bId, from: "bot", text: "" },
+      { id: userId, from: "user", text },
+      { id: botId, from: "bot", text: "" },
     ]);
 
     setInput("");
@@ -100,9 +100,12 @@ export default function App() {
       });
 
       const data = await res.json();
-      await typeMessage(data.reply || "No response.", bId);
+      await typeMessage(data.reply || "No response available.", botId);
     } catch {
-      await typeMessage("Network error. Please try again.", bId);
+      await typeMessage(
+        "Unable to connect to the server. Please try again later.",
+        botId
+      );
     } finally {
       setLoading(false);
     }
@@ -111,34 +114,34 @@ export default function App() {
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-100">
       {/* Header */}
-      <div className="flex items-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-700 to-blue-600 text-white shadow">
+      <header className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-purple-700 to-blue-600 text-white shadow-md">
         <SiOpenai className="w-6 h-6" />
-        <h1 className="font-semibold text-lg">
-         Prasanna AI Assistant
-        </h1>
-      </div>
+        <h1 className="text-lg font-semibold">Prasanna AI Assistant</h1>
+      </header>
 
-      {/* Messages */}
-      <div
+      {/* Chat Area */}
+      <main
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-6 py-4 space-y-4"
+        className="flex-1 overflow-y-auto px-6 py-6 space-y-4"
       >
-        {messages.map((m) => (
-          <MessageBubble key={m.id} from={m.from} text={m.text} />
+        {messages.map((msg) => (
+          <MessageBubble key={msg.id} from={msg.from} text={msg.text} />
         ))}
 
         {loading && (
-          <p className="text-xs text-gray-400">Typing...</p>
+          <div className="text-xs text-gray-400 animate-pulse">
+            Assistant is typing...
+          </div>
         )}
-      </div>
+      </main>
 
-      {/* Suggestions */}
-      <div className="px-6 py-2 flex gap-2 overflow-x-auto bg-white border-t">
+      {/* Starter Questions */}
+      <div className="px-6 py-3 bg-white border-t flex gap-2 overflow-x-auto">
         {STARTER_QUESTIONS.map((q) => (
           <button
             key={q}
             onClick={() => sendMessage(q)}
-            className="text-xs px-3 py-1 bg-gray-200 rounded-full hover:bg-gray-300"
+            className="px-4 py-2 text-xs bg-gray-200 rounded-full hover:bg-gray-300 transition whitespace-nowrap"
           >
             {q}
           </button>
@@ -151,19 +154,20 @@ export default function App() {
           e.preventDefault();
           sendMessage(input);
         }}
-        className="flex gap-2 px-6 py-4 bg-white border-t"
+        className="flex items-center gap-3 px-6 py-4 bg-white border-t"
       >
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-          placeholder="Type your message..."
           disabled={loading}
+          placeholder="Type your question here..."
+          className="flex-1 px-4 py-3 border rounded-full focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
         />
+
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+          className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
         >
           <FiSend />
         </button>
