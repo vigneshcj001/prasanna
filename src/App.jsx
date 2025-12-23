@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { SiOpenai } from "react-icons/si";
 import { FiSend } from "react-icons/fi";
 
-const BACKEND = "https://vigneshwarancj-portfolio-backend.onrender.com";
+const BACKEND = "https://prasanna-2gan.onrender.com";
 
 const STARTER_QUESTIONS = [
   "What are Prasanna's main skills?",
